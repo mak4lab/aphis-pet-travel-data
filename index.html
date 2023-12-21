@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+
+     <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+    <style>
+      #map {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map" style="background: rgb(187, 212, 220)"></div>
+    <script type="module">
+      var map = L.map('map').setView([0, 0], 3);
+
+      // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      //   maxZoom: 19,
+      //   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      // }).addTo(map);
+
+      const response = await fetch("./data/banner-countries.geojson");
+      const geojson = await response.json();
+      const lyr = L.geoJSON(geojson, {
+        onEachFeature: (feat, lyr) => {
+          console.log(feat.properties)
+          if (feat.properties.country) {
+            const color = feat.properties.color ;
+            lyr.bindPopup(`
+              <h1>${feat.properties.country}</h1>
+              <h2 style="color: ${color === "unknown" ? "gray" : color}">"${color} banner" country</h2>
+              <a href="${feat.properties.url}">Link</a>
+            `)
+          }
+        },
+        style: feat => {
+          const props = feat.properties;
+          const color = props.color === "unknown" ? "gray" : props.color || "gray";
+          return { color: "lightgray", fillColor: color, fillOpacity: 1, weight: 1 };
+        }
+      });
+      lyr.addTo(map);
+    </script>
+  </body>
+</html>
